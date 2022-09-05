@@ -13,12 +13,11 @@ app.set('port', port);
 app.use(express.static('public'))
 
 
-
 app.get('/',(req,res)=>{
   res.render('index')
 })
 app.get('/room', (req, res) => {
- 
+
  res.redirect(`/${uuidV4()}`)
 })
 
