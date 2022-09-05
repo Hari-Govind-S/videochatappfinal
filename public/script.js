@@ -1,5 +1,6 @@
 const socket = io('/')
 const videoGrid = document.getElementById('video-grid')
+const myvideoGrid = document.getElementById('myvideo-grid')
 const myPeer = new Peer(undefined, {
     secure: true,
   host: 'peerjshgs.herokuapp.com',
@@ -17,7 +18,7 @@ navigator.mediaDevices.getUserMedia({
   audio: true
 }).then(stream => {
     myVideoStream = stream;
-  addVideoStream(myVideo, stream,"Me")
+  addmyVideoStream(myVideo, stream,"Me")
 
   myPeer.on('call', call => {
     console.log("found a new call")
@@ -37,12 +38,23 @@ navigator.mediaDevices.getUserMedia({
 
   })
 
+})
+
+
 
 
 socket.on('user-disconnected', userId => {
-  if (peers[userId]) peers[userId].close()
+  if (mypeers[userId]) mypeers[userId].close()
+  console.log('recived message')
+  video.remove()
 })
+
+socket.on('exit',userId => {
+  mypeers[userId].close()
+  video.remove()
 })
+
+
 myPeer.on('open', id => {
   socket.emit('join-room', ROOM_ID, id)
 })
@@ -58,6 +70,12 @@ function connectToNewUser(userId, stream) {
   call.on('close', () => {
     video.remove()
   })
+  myPeer.on('disconnected', () =>{
+    video.remove()
+  })
+  myPeer.on('exit',()=>{
+    video.remove()
+  })
 }
 
 function addVideoStream(video, stream) {
@@ -67,7 +85,13 @@ function addVideoStream(video, stream) {
   })
   videoGrid.append(video)
 }
-
+function addmyVideoStream(video, stream) {
+  video.srcObject = stream
+  video.addEventListener('loadedmetadata', () => {
+    video.play()
+  })
+  myvideoGrid.append(video)
+}
 
 
 const muteUnmute = () => {
@@ -131,5 +155,5 @@ const setPlayVideo = () => {
 let btnclose = document.getElementById("leave_btn");
 let myTab;
 btnclose.addEventListener('click',()=>{
-    If(myTab) .close();
+    myPeer.disconnect();
 })
